@@ -1,0 +1,17 @@
+# config.yaml
+
+experiment_name: "simple_lr_optimizer_search"
+
+# 実行対象のスクリプト (オプション、指定がなければ main_script.py 内のデフォルト値が使われる)
+# target_script: "my_custom_script.py"
+
+parameters:
+  fixed_params: # 全ての試行で固定するパラメータ
+    epochs: 100
+    dataset_size: 1000
+
+  grid_params: # 変化させるパラメータとその値のリスト
+    learning_rate: [0.001, 0.01, 0.005]
+    optimizer: ["adam", "sgd"]
+    batch_size: [32, 64]
+    # dropout_rate: 0.5 # 単一の値もリストとして扱われます (この場合は [0.5] と同じ)
