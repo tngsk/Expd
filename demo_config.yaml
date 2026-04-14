@@ -1,0 +1,12 @@
+experiment_name: "demo_optimization_process"
+
+target_script: "demo_target.py"
+
+parameters:
+  fixed_params:
+    optimizer: "adam"
+
+  grid_params:
+    learning_rate: [0.01, 0.005, 0.001]
+    batch_size: [32, 64, 128]
+    dropout: [0.3, 0.5, 0.7]

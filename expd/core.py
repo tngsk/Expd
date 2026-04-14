@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 from typing import Any, Dict, List
 
+import mlflow
 import pandas as pd
 
 from expd.config import Config
@@ -61,6 +62,8 @@ class ExperimentRunner:
     def run(self, results_file: str = "experiment_results.csv") -> None:
         """Execute experiments based on configuration."""
         experiment_name = self.config.experiment_name
+        mlflow.set_experiment(experiment_name)
+
         param_combinations = self._generate_param_combinations()
 
         if not param_combinations:
@@ -74,22 +77,34 @@ class ExperimentRunner:
         for i, params in enumerate(param_combinations):
             print(f"\n試行 {i+1}/{len(param_combinations)}: パラメータ = {params}")
 
-            cmd = self.app_interface.build_command(params)
-            stdout, error = self.app_interface.execute(cmd)
+            with mlflow.start_run(run_name=f"run_{i+1}"):
+                mlflow.log_params(params)
 
-            accuracy = None
-            loss = None
-            if stdout is not None:
-                accuracy, loss = self.app_interface.parse_results(stdout)
+                cmd = self.app_interface.build_command(params)
+                stdout, error = self.app_interface.execute(cmd)
 
-            current_result = {
-                "experiment_name": experiment_name,
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                **params,
-                "accuracy": accuracy,
-                "loss": loss,
-            }
-            all_results.append(current_result)
+                accuracy = None
+                loss = None
+                if stdout is not None:
+                    accuracy, loss = self.app_interface.parse_results(stdout)
+
+                metrics = {}
+                if accuracy is not None:
+                    metrics["accuracy"] = accuracy
+                if loss is not None:
+                    metrics["loss"] = loss
+
+                if metrics:
+                    mlflow.log_metrics(metrics)
+
+                current_result = {
+                    "experiment_name": experiment_name,
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    **params,
+                    "accuracy": accuracy,
+                    "loss": loss,
+                }
+                all_results.append(current_result)
 
         if all_results:
             self._save_results(all_results, results_file)
