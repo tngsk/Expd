@@ -83,16 +83,9 @@ class ExperimentRunner:
                 cmd = self.app_interface.build_command(params)
                 stdout, error = self.app_interface.execute(cmd)
 
-                accuracy = None
-                loss = None
-                if stdout is not None:
-                    accuracy, loss = self.app_interface.parse_results(stdout)
-
                 metrics = {}
-                if accuracy is not None:
-                    metrics["accuracy"] = accuracy
-                if loss is not None:
-                    metrics["loss"] = loss
+                if stdout is not None:
+                    metrics = self.app_interface.parse_results(stdout)
 
                 if metrics:
                     mlflow.log_metrics(metrics)
@@ -101,8 +94,7 @@ class ExperimentRunner:
                     "experiment_name": experiment_name,
                     "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     **params,
-                    "accuracy": accuracy,
-                    "loss": loss,
+                    **metrics,
                 }
                 all_results.append(current_result)
 

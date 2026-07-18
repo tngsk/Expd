@@ -10,8 +10,11 @@ from typing import Any, Dict, List, Optional, Tuple
 class AppInterface:
     """Interface for external application integration."""
 
-    def __init__(self, target_script: str):
+    def __init__(
+        self, target_script: str, metrics_config: Optional[Dict[str, str]] = None
+    ):
         self.target_script = target_script
+        self.metrics_config = metrics_config or {}
 
     def build_command(self, params: Dict[str, Any]) -> List[str]:
         """Build command line from parameters."""
@@ -40,16 +43,20 @@ class AppInterface:
             print(f"  予期せぬエラーが発生しました: {e}")
             return None, e
 
-    def parse_results(self, output: str) -> Tuple[Optional[float], Optional[float]]:
-        """Parse results from application output."""
-        accuracy = None
-        loss = None
-        if output:
-            match = re.search(r"Accuracy:\s*([0-9.]+)", output)
-            if match:
-                accuracy = float(match.group(1))
+    def parse_results(self, output: str) -> Dict[str, float]:
+        """Parse dynamically configured metrics from application output."""
+        results: Dict[str, float] = {}
+        if not output:
+            return results
 
-            match_loss = re.search(r"Loss:\s*([0-9.]+)", output)
-            if match_loss:
-                loss = float(match_loss.group(1))
-        return accuracy, loss
+        for metric_name, pattern in self.metrics_config.items():
+            match = re.search(pattern, output)
+            if match:
+                try:
+                    results[metric_name] = float(match.group(1))
+                except ValueError:
+                    print(
+                        f"  警告: メトリクス '{metric_name}' の値 "
+                        f"'{match.group(1)}' を数値に変換できませんでした。"
+                    )
+        return results

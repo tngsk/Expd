@@ -73,6 +73,14 @@ class Config:
             return {}
         return val
 
+    @property
+    def metrics(self) -> Dict[str, str]:
+        """Get metrics configurations (metric_name -> regex pattern)."""
+        val = self.get("metrics", {})
+        if not isinstance(val, dict):
+            return {}
+        return val
+
     def save(self, config_path: Optional[str] = None) -> None:
         """Save configuration to YAML file."""
         path = config_path or self.config_path
