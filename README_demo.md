@@ -18,13 +18,10 @@
 
 ### 実行方法
 
-`main.py` 内の `CONFIG_FILE` のパスが `demo_config.yaml` に向くように書き換えるか、今回はデモ用に以下のコマンドを実行して設定を上書きしてください。（※ `config.yaml` を一時的に `demo_config.yaml` の内容で上書きするか、プログラムで指定します）
-
-今回は、便宜上 `config.yaml` を `demo_config.yaml` で置き換えて実行します。
+設定ファイルとして `demo_config.yaml` を指定して実行します。
 
 ```bash
-cp demo_config.yaml config.yaml
-uv run python expd/main.py
+uv run python expd/main.py --config demo_config.yaml
 ```
 
 実行が完了すると、`experiment_results.csv` に結果が保存され、同時に MLflow にも記録されます。
@@ -67,10 +64,10 @@ parameters:
     learning_rate: [0.004, 0.005, 0.006]
 ```
 
-再度、実験を実行します。
+再度、実験を実行します。（新しく作成した設定ファイルを指定してください）
 
 ```bash
-uv run python expd/main.py
+uv run python expd/main.py --config config_fine.yaml
 ```
 
 MLflow で `demo_optimization_process_fine` の結果を確認し、より高い Accuracy が得られたか（調整によって最適化が進んだか）を確認します。
